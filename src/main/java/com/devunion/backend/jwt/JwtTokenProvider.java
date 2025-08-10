@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
@@ -32,7 +33,7 @@ public class JwtTokenProvider {
 
     @PostConstruct
     public void init() {
-        byte[] keyBytes = Base64.getDecoder().decode(secretKey);
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8); // 일반 문자열을 UTF-8 바이트로 변환
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 

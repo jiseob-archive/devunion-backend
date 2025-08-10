@@ -18,8 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
     @Bean //비밀번호 암호화에 사용할 passwordEncoder 빈 등록
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -31,12 +29,12 @@ public class SecurityConfig {
     }
 
     @Bean // 보안 필터 체인을 정의하여 API 접근 규칙을 설정
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // CSRF 방어 비활성화 (API서버 이므로)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("api/auth/signup").permitAll() // 회원가입 API는 인증 없이 허용
+                        .requestMatchers("api/auth/**").permitAll() // 회원가입 API는 인증 없이 허용
                         // swagger UI 접근 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요

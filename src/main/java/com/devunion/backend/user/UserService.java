@@ -1,7 +1,13 @@
 package com.devunion.backend.user;
 
+import com.devunion.backend.jwt.JwtTokenProvider;
+import com.devunion.backend.user.dto.LoginRequestDto;
+import com.devunion.backend.user.dto.UserProfileResponseDto;
 import com.devunion.backend.user.dto.UserRegistrationDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -43,6 +49,13 @@ public class UserService implements UserDetailsService {
         //4. DB에 저장
         return userRepository.save(user);
 
+    }
+
+    // 프로필 조회 메서드
+    public UserProfileResponseDto getUserProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
+        return UserProfileResponseDto.from(user);
     }
 
     @Override
