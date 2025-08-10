@@ -4,10 +4,13 @@ import com.devunion.backend.jwt.JwtTokenProvider;
 import com.devunion.backend.user.dto.LoginRequestDto;
 import com.devunion.backend.user.dto.UserProfileResponseDto;
 import com.devunion.backend.user.dto.UserRegistrationDto;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor //final 필드들을 이용하여 생성자를 자동으로 생성
@@ -40,7 +44,13 @@ public class UserService implements UserDetailsService {
         user.setUsername(registrationDto.getUsername());
         user.setMajor(registrationDto.getMajor());
         user.setGrade(registrationDto.getGrade());
-        user.setRole(registrationDto.getRole() != null ? registrationDto.getRole() : "후배");
+
+        // 기본값 STUDENT
+        if (registrationDto.getRole() == null) {
+            user.setRole(Role.STUDENT);
+        } else {
+            user.setRole(registrationDto.getRole());
+        }
 
         //3. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(registrationDto.getPassword());
@@ -63,7 +73,18 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
 
-        // Spring Security의 UserDetails 객체로 변환하여 변환
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), new ArrayList<>());
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())); // 기본 롤
+        if (user.getRole() == Role.ADMIN) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_STUDENT"));
+        }
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+    }
+
+    @Transactional
+    public void updateRole(Long userId, Role newRole) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        user.setRole(newRole);
     }
 }

@@ -1,5 +1,6 @@
 package com.devunion.backend.user.dto;
 
+import com.devunion.backend.user.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -22,5 +23,5 @@ public class UserRegistrationDto {
 
     private String major;
     private Integer grade;
-    private String role;
+    private Role role;
 }

@@ -1,5 +1,6 @@
 package com.devunion.backend.user.dto;
 
+import com.devunion.backend.user.Role;
 import com.devunion.backend.user.User;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +13,7 @@ public class UserProfileResponseDto {
     private String username;
     private String major;
     private Integer grade;
-    private String role;
+    private Role role;
 
     public static UserProfileResponseDto from(User user) {
         return UserProfileResponseDto.builder()

@@ -30,8 +30,9 @@ public class User {
 
     private Integer grade;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role; //예: 후배, 선배, 운영자
+    private Role role; //예: 학생, 운영자
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

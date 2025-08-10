@@ -34,9 +34,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // CSRF 방어 비활성화 (API서버 이므로)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("api/auth/**").permitAll() // 회원가입 API는 인증 없이 허용
+                        .requestMatchers("/api/auth/**").permitAll() // 회원가입 API는 인증 없이 허용
                         // swagger UI 접근 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("api/admin/**").hasRole("ADMIN") // 운영자만
                         .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요
                 )
                 // 직접 만든 JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 추가
