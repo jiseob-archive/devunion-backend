@@ -3,6 +3,7 @@ package com.devunion.backend.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -37,7 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll() // 회원가입 API는 인증 없이 허용
                         // swagger UI 접근 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("api/admin/**").hasRole("ADMIN") // 운영자만
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // 운영자만
                         .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요
                 )
                 // 직접 만든 JWT 필터를 UsernamePasswordAuthenticationFilter 앞에 추가

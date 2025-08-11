@@ -3,6 +3,7 @@ package com.devunion.backend.user;
 import com.devunion.backend.jwt.JwtTokenProvider;
 import com.devunion.backend.user.dto.LoginRequestDto;
 import com.devunion.backend.user.dto.UserProfileResponseDto;
+import com.devunion.backend.user.dto.UserPublicProfileDto;
 import com.devunion.backend.user.dto.UserRegistrationDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor //final 필드들을 이용하여 생성자를 자동으로 생성
@@ -36,6 +38,9 @@ public class UserService implements UserDetailsService {
         //1. 이메일 중복 확인
         if (userRepository.findByEmail(registrationDto.getEmail()).isPresent()) {
             throw new IllegalStateException("이미 존재하는 이메일입니다.");
+        }
+        if (userRepository.existsByUsername(registrationDto.getUsername())) {
+            throw new IllegalStateException("이미 존재하는 닉네임입니다.");
         }
 
         //2. DTO를 User 엔티티로 변환
@@ -61,13 +66,34 @@ public class UserService implements UserDetailsService {
 
     }
 
-    // 프로필 조회 메서드
+    // 내 프로필 (email기반) - /api/users/me 용
     public UserProfileResponseDto getUserProfile(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
         return UserProfileResponseDto.from(user);
     }
 
+    // 공개 프로필 : id로 조회 (게시판 링크 용)
+    public UserPublicProfileDto getPublicProfileById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + id));
+        return UserPublicProfileDto.from(user);
+    }
+
+    // 공개 프로필 : username으로 조회 (게시판 링크용)
+    public UserPublicProfileDto getPublicProfileByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+        return UserPublicProfileDto.from(user);
+    }
+
+    public Optional<UserPublicProfileDto> getPublicProfileByUsernameOpt(String username) {
+        return userRepository.findByUsername(username)
+                .map(UserPublicProfileDto::from);
+    }
+
+
+    // Security: 권한 부여 (ADMIN 이면 STUDENT 권한도 가지고 있음)
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
